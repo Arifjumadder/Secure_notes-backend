@@ -9,11 +9,7 @@ router.param('id', validateId);
 
 /* ------------------------------------------------------------------ *
  * Scenario 2 - posts of a particular user (PUBLIC)
- * ONE aggregation pipeline with a $lookup stage.
- *  - $match on _id                         -> default _id index
- *  - $lookup localField/foreignField+pipeline on posts.author
- *    -> Post index { author:1, _id:-1 } serves both the join and the sort
- * (localField/foreignField together with a sub-pipeline needs MongoDB 5.0+, Atlas is fine)
+
  * ------------------------------------------------------------------ */
 router.get('/:id/posts', asyncHandler(async (req, res) => {
   const { page, limit, skip } = parsePagination(req.query);
@@ -53,11 +49,7 @@ router.use(authenticate, authorize('admin'));
 
 /* ------------------------------------------------------------------ *
  * Scenario 1 - users grouped by interests
- * EXACTLY ONE User.aggregate() call (no other query methods).
- *  - $match on interests uses the multikey index { interests: 1 }
- *      * ?interest=chess  -> equality bounds on the index
- *      * no filter        -> { $type: 'string' } bounds on the index (skips users with no interests)
- *  - $unwind -> $group by interest -> $sort -> $facet for pagination + total in the same call
+ *
  * ------------------------------------------------------------------ */
 router.get('/interests/grouped', asyncHandler(async (req, res) => {
   const { page, limit, skip } = parsePagination(req.query);
